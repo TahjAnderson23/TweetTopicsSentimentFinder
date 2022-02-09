@@ -6,7 +6,6 @@ Clustering tweet topics based on city.
 1. Git clone the repo and cd into it
 
 2. Create a virtual environment
-# Note: can alternatively use python3.6 or python3.7
 virtualenv venv -p python3.8
 
 activate it using this
