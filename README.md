@@ -11,7 +11,7 @@ virtualenv venv -p python3.8
 activate it using this
 source venv/bin/activate
 
-3. run 'pip install requirements.txt' This gathers all of the packages used.
+3. run 'pip install -r requirements.txt' This gathers all of the packages used.
 
 
 
