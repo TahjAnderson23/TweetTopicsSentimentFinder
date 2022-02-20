@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 #%matplotlib inline
 
 #Authenticate 
-client = tweepy.Client(" ")
+client = tweepy.Client("")
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -38,7 +38,7 @@ if (not api):
 def pull_by_location():
     tweet_lst=[]
     geoc="33.7490,-84.3880,40mi"
-    for tweet in tweepy.Cursor(api.search_tweets,q="*", geocode=geoc).items(1000):
+    for tweet in tweepy.Cursor(api.search_tweets,q="Atlanta", geocode=geoc).items(1000):
         tweetDate = tweet.created_at.date()
         tweetDate = datetime(2022,2,10)
         if(tweet.coordinates != None):
@@ -56,20 +56,37 @@ def pull_by_location():
     print(tweet_df)
     print(tweet_df.describe())
     #tweet_df.to_csv('Atlanta_tweets.csv')
-    #plt.scatter(x=tweet_df['long'], y=tweet_df['lat'])
-    #plt.show()
+    plt.title('Geotagged tweets in Atlanta')
+    plt.xlabel('longitude')
+    plt.ylabel('latitude')
+    plt.scatter(x=tweet_df['long'], y=tweet_df['lat'])
+    plt.show()
 
 
 def pull_by_hashtag():
     tweet_lst2=[]
-    for tweet in tweepy.Cursor(api.search_tweets, q='#Atlanta').items(1000):
+    for tweet in tweepy.Cursor(api.search_tweets, q='Halftime Show -filter:retweets').items(1000):
         tweetDate = tweet.created_at.date()
+        tweetDate = datetime(2022,2,13)
         tweet_lst2.append([tweetDate,tweet.id,
                 tweet.user.screen_name,
-                tweet.user.name, tweet.text])
+                tweet.user.name, tweet.text,
+                ])
     
     tweet_df2 = pd.DataFrame(tweet_lst2, columns=['tweet_dt', 'id','username', 'name', 'tweet'])
     print(tweet_df2)
+    #print(tweet_df2.describe())
+    tweet_df2.to_csv('superbowl_halftime_tweets.csv')
 
 
+#pull_by_hashtag()
+
+def plot_data():
+   
+    data = pd.read_csv('Atlanta_tweets.csv')
+
+    plt.scatter(x=data['long'], y=data['lat'])
+    plt.show()
+
+#plot_data()
 pull_by_hashtag()
