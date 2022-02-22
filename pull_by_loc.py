@@ -66,20 +66,19 @@ def pull_by_location():
 def pull_by_hashtag():
     tweet_lst2=[]
     for tweet in tweepy.Cursor(api.search_tweets, q='Halftime Show -filter:retweets').items(1000):
-        tweetDate = tweet.created_at.date()
-        tweetDate = datetime(2022,2,13)
-        tweet_lst2.append([tweetDate,tweet.id,
-                tweet.user.screen_name,
-                tweet.user.name, tweet.text,
-                ])
-    
+        if tweet.lang == "en":
+            tweetDate = tweet.created_at.date()
+            tweetDate = datetime(2022,2,13)
+            tweet_lst2.append([tweetDate,tweet.id,
+                    tweet.user.screen_name,
+                    tweet.user.name, tweet.text,
+                    ])
+        
     tweet_df2 = pd.DataFrame(tweet_lst2, columns=['tweet_dt', 'id','username', 'name', 'tweet'])
     print(tweet_df2)
     #print(tweet_df2.describe())
-    tweet_df2.to_csv('superbowl_halftime_tweets.csv')
+    #tweet_df2.to_csv('superbowl_halftime_tweets.csv')
 
-
-#pull_by_hashtag()
 
 def plot_data():
    
