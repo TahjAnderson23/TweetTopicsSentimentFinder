@@ -2,7 +2,10 @@
 
 import sys
 import os
+from ctt import clean
+import pickle
 import re
+from matplotlib.style import available
 import tweepy
 from tweepy import OAuthHandler
 #import twitter
@@ -14,6 +17,8 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import configparser
 import matplotlib.pyplot as plt
+
+import json
 #%matplotlib inline
 
 #Authenticate 
@@ -28,6 +33,8 @@ access_token = config['twitter']['access_token']
 access_token_secret = config['twitter']['access_token_secret']
 
 auth = tweepy.AppAuthHandler(api_key, api_key_secret)
+#auth.set_access_token(access_token, access_token_secret)
+
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 
@@ -65,10 +72,10 @@ def pull_by_location():
 
 def pull_by_hashtag():
     tweet_lst2=[]
-    for tweet in tweepy.Cursor(api.search_tweets, q='Halftime Show -filter:retweets').items(1000):
+    for tweet in tweepy.Cursor(api.search_tweets, q='Climate Change -filter:retweets').items(1000):
         if tweet.lang == "en":
             tweetDate = tweet.created_at.date()
-            tweetDate = datetime(2022,2,13)
+            #tweetDate = datetime(2022,2,13)
             tweet_lst2.append([tweetDate,tweet.id,
                     tweet.user.screen_name,
                     tweet.user.name, tweet.text,
@@ -76,9 +83,16 @@ def pull_by_hashtag():
         
     tweet_df2 = pd.DataFrame(tweet_lst2, columns=['tweet_dt', 'id','username', 'name', 'tweet'])
     print(tweet_df2)
+    find_sentiment(tweet_df2)
+
     #print(tweet_df2.describe())
     #tweet_df2.to_csv('superbowl_halftime_tweets.csv')
 
+def find_trending_tweets():
+    available_loc = api.available_trends()
+
+    df = pd.DataFrame.from_records(available_loc)
+    print(df)
 
 def plot_data():
    
@@ -87,5 +101,46 @@ def plot_data():
     plt.scatter(x=data['long'], y=data['lat'])
     plt.show()
 
+
+def clean_tweets(txt):
+    hashtagPattern = re.compile("#\w+")
+    mentionPattern = re.compile("@\w+")
+    txt = re.sub(hashtagPattern, "", str(txt))
+    txt = re.sub(mentionPattern, "", str(txt))
+    
+    txt = " ".join(txt.split())
+    
+    return txt
+
+def find_sentiment(df):
+    vectorizer = pickle.load(open('models/vectorizer.sav', 'rb'))
+    classifier = pickle.load(open('models/SVCclassifier.sav', 'rb'))
+
+    df['tweet'] = df['tweet'].apply(clean_tweets)
+
+    cleanedText = []
+    for text in df["tweet"]:
+    # preprocess to remove unwanted
+        text = clean.kitchen_sink(text)
+        cleanedText.append(text)
+    
+    df.loc[:, "tweet"] = cleanedText
+    #print(df.head())
+    sentiment_df = pd.DataFrame(columns = ["text", "sentiment"])
+    sentiment_arrays = []
+    for text in df["tweet"]:
+        #sentiment_df["text"] = text
+        text_vector = vectorizer.transform([text])
+        result = classifier.predict(text_vector)
+        #sentiment_df["sentiment"] = result
+        sentiment_arrays.append(result)
+    
+    sen_df = pd.DataFrame(sum(map(list, sentiment_arrays), []))
+    df["sentiment"] = sen_df[0]
+    print(df)
+
+
+
 #plot_data()
 pull_by_hashtag()
+#find_trending_tweets()

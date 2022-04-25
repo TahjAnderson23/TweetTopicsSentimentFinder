@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 
 vectorizer = pickle.load(open('models/vectorizer.sav', 'rb'))
-classifier = pickle.load(open('models/classifier.sav', 'rb'))
+classifier = pickle.load(open('models/SVCclassifier.sav', 'rb'))
 
 @app.route('/sentiment', methods=['GET', 'POST'])
 def sentiment_analysis():
